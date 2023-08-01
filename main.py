@@ -35,7 +35,7 @@ def refreshTable():
 def read():
     conn = connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM stocks")
+    cursor.execute("SELECT `item_no`, `name`, `category`, `price`, `quantity` FROM stocks")
     results = cursor.fetchall()
     conn.commit()
     conn.close()
@@ -74,6 +74,45 @@ def generateRand():
     setph(itemNo,1)
     print(itemNo)
 
+def select():
+    try:
+        selected_item = my_tree.selection()[0]
+        itemno = str(my_tree.item(selected_item)['values'][0])
+        name = str(my_tree.item(selected_item)['values'][1])
+        category = str(my_tree.item(selected_item)['values'][2])
+        price = str(my_tree.item(selected_item)['values'][3])
+        quantity = str(my_tree.item(selected_item)['values'][4])
+
+        setph(itemno,1)
+        setph(name,2)
+        setph(category,3)
+        setph(price,4)
+        setph(quantity,5)
+    except:
+        messagebox.showinfo("Error", "Please select a data row")
+
+def save():
+    itemno = str(itemNoEntry.get())
+    name = str(nameEntry.get())
+    category = str(categoryEntry.get())
+    price = str(priceEntry.get())
+    quantity = str(quantityEntry.get())
+
+    if (itemno == "" or itemno == " ") or (name == "" or name == " ") or (category == "" or category == " ") or (price == "" or price == " ") or (quantity == "" or quantity == " "):
+        messagebox.showinfo("Error", "Please fill up the blank entry")
+        return
+    else:
+        try:
+            conn = connection()
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO stocks (`item_no`, `name`, `category`, `price`, `quantity`) VALUES ('"+itemno+"','"+name+"','"+category+"','"+price+"','"+quantity+"') ")
+            conn.commit()
+            conn.close()
+        except:
+            messagebox.showinfo("Error", "Item No already exist")
+            return
+
+    refreshTable()
 
 label = Label(root, text="Stock Management System", font=(myFontArray))
 label.grid(row=0, column=0, columnspan=8, rowspan=2, padx=50, pady=40)
@@ -92,7 +131,7 @@ categoryLabel.grid(row=5, column=0, columnspan=1, padx=50, pady=5)
 priceLabel.grid(row=6, column=0, columnspan=1, padx=50, pady=5)
 quantityLabel.grid(row=7, column=0, columnspan=1, padx=50, pady=5)
 
-itenNoEntry = Entry(root, width=40, bd=5, font=(myFontArray), state='disabled', textvariable = ph1)
+itemNoEntry = Entry(root, width=40, bd=5, font=(myFontArray), state='disabled', textvariable = ph1)
 generateNoBtn = Button(
     root, text="Generate No.", padx=20, pady=1, width=9,
     bd=5, font=(myFontArray), bg="#d7eeb4", command=generateRand)
@@ -102,7 +141,7 @@ categoryEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = p
 priceEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = ph4)
 quantityEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = ph5)
 
-itenNoEntry.grid(row=3, column=1, columnspan=3, padx=5, pady=0)
+itemNoEntry.grid(row=3, column=1, columnspan=3, padx=5, pady=0)
 generateNoBtn.grid(row=3, column=4, columnspan=1, rowspan=1)
 
 nameEntry.grid(row=4, column=1, columnspan=4, padx=5, pady=0)
@@ -110,31 +149,31 @@ categoryEntry.grid(row=5, column=1, columnspan=4, padx=5, pady=0)
 priceEntry.grid(row=6, column=1, columnspan=4, padx=5, pady=0)
 quantityEntry.grid(row=7, column=1, columnspan=4, padx=5, pady=0)
 
-addBtn = Button(
+selectBtn = Button(
     root, text="Select", padx=50, pady=25, width=10,
-    bd=5, font=(myFontArray), bg="#84F894")
-updateBtn = Button(
+    bd=5, font=(myFontArray), bg="#84F894", command=select)
+findBtn = Button(
     root, text="Find", padx=50, pady=25, width=10,
     bd=5, font=(myFontArray), bg="#84E8F8")
-deleteBtn = Button(
+saveBtn = Button(
     root, text="Save", padx=50, pady=25, width=10,
-    bd=5, font=(myFontArray), bg="#FF9999")
-searchBtn = Button(
+    bd=5, font=(myFontArray), bg="#FF9999", command=save)
+updateBtn = Button(
     root, text="Update", padx=50, pady=25, width=10,
     bd=5, font=(myFontArray), bg="#F4FE82")
-resetBtn = Button(
+deleteBtn = Button(
     root, text="Delete", padx=50, pady=25, width=10,
     bd=5, font=(myFontArray), bg="#F398FF")
-selectBtn = Button(
+resetBtn = Button(
     root, text="Reset", padx=50, pady=25, width=10,
     bd=5, font=(myFontArray), bg="#EEEEEE")
 
-addBtn.grid(row=3, column=5, columnspan=1, rowspan=2)
-updateBtn.grid(row=5, column=5, columnspan=1, rowspan=2)
-deleteBtn.grid(row=7, column=5, columnspan=1, rowspan=2)
-searchBtn.grid(row=9, column=5, columnspan=1, rowspan=2)
-resetBtn.grid(row=11, column=5, columnspan=1, rowspan=2)
-selectBtn.grid(row=13, column=5, columnspan=1, rowspan=2)
+selectBtn.grid(row=3, column=5, columnspan=1, rowspan=2)
+findBtn.grid(row=5, column=5, columnspan=1, rowspan=2)
+saveBtn.grid(row=7, column=5, columnspan=1, rowspan=2)
+updateBtn.grid(row=9, column=5, columnspan=1, rowspan=2)
+deleteBtn.grid(row=11, column=5, columnspan=1, rowspan=2)
+resetBtn.grid(row=13, column=5, columnspan=1, rowspan=2)
 
 style = ttk.Style()
 style.configure("Treeview.Heading", font=(myFontArray))
