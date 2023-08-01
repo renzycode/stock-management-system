@@ -1,7 +1,9 @@
+import pymysql
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 import tkinter as tk
+import random
 
 
 root = Tk()
@@ -9,13 +11,69 @@ root.title("Stock Management System")
 root.geometry("1080x720")
 my_tree = ttk.Treeview(root)
 
+myFontArray = ['Arial', 15]
+
+def connection():
+    conn = pymysql.connect(
+        host='localhost',
+        user='root', 
+        password='',
+        db='stocks_db',
+    )
+    return conn
+
+def refreshTable():
+    for data in my_tree.get_children():
+        my_tree.delete(data)
+
+    for array in read():
+        my_tree.insert(parent='', index='end', iid=array, text="", values=(array), tag="orow")
+
+    my_tree.tag_configure('orow', background='#EEEEEE', font=(myFontArray))
+    my_tree.grid(row=8, column=0, columnspan=5, rowspan=11, padx=10, pady=20)
+
+def read():
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM stocks")
+    results = cursor.fetchall()
+    conn.commit()
+    conn.close()
+    return results
+
+
 ph1 = tk.StringVar()
 ph2 = tk.StringVar()
 ph3 = tk.StringVar()
 ph4 = tk.StringVar()
 ph5 = tk.StringVar()
 
-myFontArray = ['Arial', 15]
+#placeholder set value function
+def setph(word,num):
+    if num ==1:
+        ph1.set(word)
+    if num ==2:
+        ph2.set(word)
+    if num ==3:
+        ph3.set(word)
+    if num ==4:
+        ph4.set(word)
+    if num ==5:
+        ph5.set(word)
+
+alphanumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+
+def generateRand():
+
+    itemNo = ''
+
+    for i in range(0,7):
+        randno = random.randrange(0,(len(alphanumeric)-1))
+        itemNo = itemNo+str(alphanumeric[randno])
+
+    setph(itemNo,1)
+    print(itemNo)
+
 
 label = Label(root, text="Stock Management System", font=(myFontArray))
 label.grid(row=0, column=0, columnspan=8, rowspan=2, padx=50, pady=40)
@@ -37,7 +95,7 @@ quantityLabel.grid(row=7, column=0, columnspan=1, padx=50, pady=5)
 itenNoEntry = Entry(root, width=40, bd=5, font=(myFontArray), state='disabled', textvariable = ph1)
 generateNoBtn = Button(
     root, text="Generate No.", padx=20, pady=1, width=9,
-    bd=5, font=(myFontArray), bg="#d7eeb4")
+    bd=5, font=(myFontArray), bg="#d7eeb4", command=generateRand)
 
 nameEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = ph2)
 categoryEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = ph3)
@@ -77,5 +135,25 @@ deleteBtn.grid(row=7, column=5, columnspan=1, rowspan=2)
 searchBtn.grid(row=9, column=5, columnspan=1, rowspan=2)
 resetBtn.grid(row=11, column=5, columnspan=1, rowspan=2)
 selectBtn.grid(row=13, column=5, columnspan=1, rowspan=2)
+
+style = ttk.Style()
+style.configure("Treeview.Heading", font=(myFontArray))
+
+my_tree['columns'] = ("Item No.","Name","Category","Price","Quantity")
+
+my_tree.column("#0", width=0, stretch=NO)
+my_tree.column("Item No.", anchor=W, width=170)
+my_tree.column("Name", anchor=W, width=150)
+my_tree.column("Category", anchor=W, width=150)
+my_tree.column("Price", anchor=W, width=165)
+my_tree.column("Quantity", anchor=W, width=150)
+
+my_tree.heading("Item No.", text="Item No.", anchor=W)
+my_tree.heading("Name", text="Name", anchor=W)
+my_tree.heading("Category", text="Category", anchor=W)
+my_tree.heading("Price", text="Price", anchor=W)
+my_tree.heading("Quantity", text="Quantity", anchor=W)
+
+refreshTable()
 
 root.mainloop()
