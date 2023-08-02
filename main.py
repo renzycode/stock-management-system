@@ -105,11 +105,15 @@ def save():
         try:
             conn = connection()
             cursor = conn.cursor()
-            sql1 = f"SELECT * FROM stocks WHERE `item_no` = 'C79RUE3' "
+            sql1 = f"SELECT * FROM stocks WHERE `item_no` = '{itemno}' "
             cursor.execute(sql1)
-            checkItemNo = cursor.fetchone()
-            print(checkItemNo)
-            # cursor.execute("INSERT INTO stocks (`item_no`, `name`, `category`, `price`, `quantity`) VALUES ('"+itemno+"','"+name+"','"+category+"','"+price+"','"+quantity+"') ")
+            checkItemNo = cursor.fetchall()
+            if len(checkItemNo) > 0:
+                print('existing'+checkItemNo)
+            else:
+                sql2 = f"INSERT INTO stocks (`item_no`, `name`, `category`, `price`, `quantity`) VALUES ('{itemno}','{name}','{category}','{price}','{quantity}') "
+                cursor.execute(sql2)
+
             conn.commit()
             conn.close()
         except:
