@@ -105,7 +105,11 @@ def save():
         try:
             conn = connection()
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO stocks (`item_no`, `name`, `category`, `price`, `quantity`) VALUES ('"+itemno+"','"+name+"','"+category+"','"+price+"','"+quantity+"') ")
+            sql1 = f"SELECT * FROM stocks WHERE `item_no` = 'C79RUE3' "
+            cursor.execute(sql1)
+            checkItemNo = cursor.fetchone()
+            print(checkItemNo)
+            # cursor.execute("INSERT INTO stocks (`item_no`, `name`, `category`, `price`, `quantity`) VALUES ('"+itemno+"','"+name+"','"+category+"','"+price+"','"+quantity+"') ")
             conn.commit()
             conn.close()
         except:
@@ -150,22 +154,22 @@ priceEntry.grid(row=6, column=1, columnspan=4, padx=5, pady=0)
 quantityEntry.grid(row=7, column=1, columnspan=4, padx=5, pady=0)
 
 selectBtn = Button(
-    root, text="Select", padx=50, pady=25, width=10,
+    root, text="Select", padx=50, pady=25, width=5,
     bd=5, font=(myFontArray), bg="#84F894", command=select)
 findBtn = Button(
-    root, text="Find", padx=50, pady=25, width=10,
+    root, text="Find", padx=50, pady=25, width=5,
     bd=5, font=(myFontArray), bg="#84E8F8")
 saveBtn = Button(
-    root, text="Save", padx=50, pady=25, width=10,
+    root, text="Save", padx=50, pady=25, width=5,
     bd=5, font=(myFontArray), bg="#FF9999", command=save)
 updateBtn = Button(
-    root, text="Update", padx=50, pady=25, width=10,
+    root, text="Update", padx=50, pady=25, width=5,
     bd=5, font=(myFontArray), bg="#F4FE82")
 deleteBtn = Button(
-    root, text="Delete", padx=50, pady=25, width=10,
+    root, text="Delete", padx=50, pady=25, width=5,
     bd=5, font=(myFontArray), bg="#F398FF")
 resetBtn = Button(
-    root, text="Reset", padx=50, pady=25, width=10,
+    root, text="Reset", padx=50, pady=25, width=5,
     bd=5, font=(myFontArray), bg="#EEEEEE")
 
 selectBtn.grid(row=3, column=5, columnspan=1, rowspan=2)
