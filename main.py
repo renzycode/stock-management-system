@@ -30,36 +30,38 @@ def refreshTable():
         my_tree.insert(parent='', index='end', iid=array, text="", values=(array), tag="orow")
 
     my_tree.tag_configure('orow', background='#EEEEEE', font=(myFontArray))
-    my_tree.grid(row=8, column=0, columnspan=5, rowspan=11, padx=10, pady=20)
+    my_tree.grid(row=8, column=0, columnspan=5, rowspan=12, padx=10, pady=20)
 
 def read():
     conn = connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT `item_no`, `name`, `category`, `price`, `quantity` FROM stocks")
+    cursor.execute("SELECT `item_no`, `name`, `category`, `price`, `quantity`,`date` FROM stocks ORDER BY `id` DESC")
     results = cursor.fetchall()
     conn.commit()
     conn.close()
     return results
 
 
-ph1 = tk.StringVar()
-ph2 = tk.StringVar()
-ph3 = tk.StringVar()
-ph4 = tk.StringVar()
-ph5 = tk.StringVar()
+placeholderArray = ['','','','','']
+
+for i in range(0,5):
+    placeholderArray[i] = tk.StringVar()
+
+
 
 #placeholder set value function
 def setph(word,num):
-    if num ==1:
-        ph1.set(word)
-    if num ==2:
-        ph2.set(word)
-    if num ==3:
-        ph3.set(word)
-    if num ==4:
-        ph4.set(word)
-    if num ==5:
-        ph5.set(word)
+    for ph in range(0,5):
+        if ph == num:
+            placeholderArray[ph].set(word)
+
+# def clearEntries():
+#         for
+#         ph1.set(word)
+#         ph2.set(word)
+#         ph3.set(word)
+#         ph4.set(word)
+#         ph5.set(word)
 
 alphanumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
@@ -71,7 +73,7 @@ def generateRand():
         randno = random.randrange(0,(len(alphanumeric)-1))
         itemNo = itemNo+str(alphanumeric[randno])
 
-    setph(itemNo,1)
+    setph(itemNo,0)
     print(itemNo)
 
 def select():
@@ -83,11 +85,11 @@ def select():
         price = str(my_tree.item(selected_item)['values'][3])
         quantity = str(my_tree.item(selected_item)['values'][4])
 
-        setph(itemno,1)
-        setph(name,2)
-        setph(category,3)
-        setph(price,4)
-        setph(quantity,5)
+        setph(itemno,0)
+        setph(name,1)
+        setph(category,2)
+        setph(price,3)
+        setph(quantity,4)
     except:
         messagebox.showinfo("Error", "Please select a data row")
 
@@ -132,30 +134,30 @@ categoryLabel = Label(root, text="Category",anchor="e",width=10, font=(myFontArr
 priceLabel = Label(root, text="Price",anchor="e",width=10, font=(myFontArray))
 quantityLabel = Label(root, text="Quantity",anchor="e",width=10, font=(myFontArray))
 
-itemNoLabel.grid(row=3, column=0, columnspan=1, padx=50, pady=5)
+itemNoLabel.grid(row=3, column=0, columnspan=1, padx=20, pady=5)
+nameLabel.grid(row=4, column=0, columnspan=1, padx=20, pady=5)
+categoryLabel.grid(row=5, column=0, columnspan=1, padx=20, pady=5)
+priceLabel.grid(row=6, column=0, columnspan=1, padx=20, pady=5)
+quantityLabel.grid(row=7, column=0, columnspan=1, padx=20, pady=5)
 
-nameLabel.grid(row=4, column=0, columnspan=1, padx=50, pady=5)
-categoryLabel.grid(row=5, column=0, columnspan=1, padx=50, pady=5)
-priceLabel.grid(row=6, column=0, columnspan=1, padx=50, pady=5)
-quantityLabel.grid(row=7, column=0, columnspan=1, padx=50, pady=5)
 
-itemNoEntry = Entry(root, width=40, bd=5, font=(myFontArray), state='disabled', textvariable = ph1)
+itemNoEntry = Entry(root, width=40, bd=5, font=(myFontArray), state='disabled', textvariable = placeholderArray[0])
 generateNoBtn = Button(
     root, text="Generate No.", padx=20, pady=1, width=9,
     bd=5, font=(myFontArray), bg="#d7eeb4", command=generateRand)
 
-nameEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = ph2)
-categoryEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = ph3)
-priceEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = ph4)
-quantityEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = ph5)
+nameEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = placeholderArray[1])
+categoryEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = placeholderArray[2])
+priceEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = placeholderArray[3])
+quantityEntry = Entry(root, width=55, bd=5, font=(myFontArray), textvariable = placeholderArray[4])
 
 itemNoEntry.grid(row=3, column=1, columnspan=3, padx=5, pady=0)
-generateNoBtn.grid(row=3, column=4, columnspan=1, rowspan=1)
+generateNoBtn.grid(row=3, column=4, columnspan=3, rowspan=1)
 
-nameEntry.grid(row=4, column=1, columnspan=4, padx=5, pady=0)
-categoryEntry.grid(row=5, column=1, columnspan=4, padx=5, pady=0)
-priceEntry.grid(row=6, column=1, columnspan=4, padx=5, pady=0)
-quantityEntry.grid(row=7, column=1, columnspan=4, padx=5, pady=0)
+nameEntry.grid(row=4, column=1, columnspan=6, padx=5, pady=0)
+categoryEntry.grid(row=5, column=1, columnspan=6, padx=5, pady=0)
+priceEntry.grid(row=6, column=1, columnspan=6, padx=5, pady=0)
+quantityEntry.grid(row=7, column=1, columnspan=6, padx=5, pady=0)
 
 selectBtn = Button(
     root, text="Select", padx=50, pady=25, width=5,
@@ -176,17 +178,17 @@ resetBtn = Button(
     root, text="Reset", padx=50, pady=25, width=5,
     bd=5, font=(myFontArray), bg="#EEEEEE")
 
-selectBtn.grid(row=3, column=5, columnspan=1, rowspan=2)
-findBtn.grid(row=5, column=5, columnspan=1, rowspan=2)
-saveBtn.grid(row=7, column=5, columnspan=1, rowspan=2)
-updateBtn.grid(row=9, column=5, columnspan=1, rowspan=2)
-deleteBtn.grid(row=11, column=5, columnspan=1, rowspan=2)
-resetBtn.grid(row=13, column=5, columnspan=1, rowspan=2)
+selectBtn.grid(row=3, column=10, columnspan=1, rowspan=2)
+findBtn.grid(row=5, column=10, columnspan=1, rowspan=2)
+saveBtn.grid(row=7, column=10, columnspan=1, rowspan=2)
+updateBtn.grid(row=9, column=10, columnspan=1, rowspan=2)
+deleteBtn.grid(row=11, column=10, columnspan=1, rowspan=2)
+resetBtn.grid(row=13, column=10, columnspan=1, rowspan=2)
 
 style = ttk.Style()
 style.configure("Treeview.Heading", font=(myFontArray))
 
-my_tree['columns'] = ("Item No.","Name","Category","Price","Quantity")
+my_tree['columns'] = ("Item No.","Name","Category","Price","Quantity","Date")
 
 my_tree.column("#0", width=0, stretch=NO)
 my_tree.column("Item No.", anchor=W, width=170)
@@ -194,12 +196,14 @@ my_tree.column("Name", anchor=W, width=150)
 my_tree.column("Category", anchor=W, width=150)
 my_tree.column("Price", anchor=W, width=165)
 my_tree.column("Quantity", anchor=W, width=150)
+my_tree.column("Date", anchor=W, width=150)
 
 my_tree.heading("Item No.", text="Item No.", anchor=W)
 my_tree.heading("Name", text="Name", anchor=W)
 my_tree.heading("Category", text="Category", anchor=W)
 my_tree.heading("Price", text="Price", anchor=W)
 my_tree.heading("Quantity", text="Quantity", anchor=W)
+my_tree.heading("Date", text="Date", anchor=W)
 
 refreshTable()
 
