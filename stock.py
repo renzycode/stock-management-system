@@ -26,12 +26,13 @@ def connection():
     )
     return conn
 
+conn = connection()
+cursor = conn.cursor()
+
 def refreshTable():
     for data in my_tree.get_children():
         my_tree.delete(data)
     for array in read():
-        dateraw=array[5]
-        print(array[5])
         my_tree.insert(parent='', index='end', iid=array, text="", values=(array), tag="orow")
     my_tree.tag_configure('orow', background='#EEEEEE')
     my_tree.pack()
@@ -46,8 +47,6 @@ def read():
     return results
 
 def exportExcel():
-    conn = connection()
-    cursor = conn.cursor()
     cursor.execute("SELECT `item_id`,`name`,`price`,`qnt`,`category`,`date` FROM stocks ORDER BY `id` DESC")
     dataraw = cursor.fetchall()
     date = str(datetime.now());
@@ -61,6 +60,7 @@ def exportExcel():
     print("saved: stocks_"+dateFinal+".csv")
     conn.commit()
     conn.close()
+    messagebox.showinfo("", "Excel file downloaded")
 
 placeholderArray = ['','','','','']
 
@@ -123,6 +123,64 @@ def save():
             return
     refreshTable()
 
+def update():
+    selectedItemid = ""
+
+    try:
+        selected_item = my_tree.selection()[0]
+        selectedItemid = str(my_tree.item(selected_item)['values'][0])
+    except:
+        messagebox.showwarning("", "Please select a data row")
+
+    
+
+    itemId = str(itemIdEntry.get())
+    name = str(nameEntry.get())
+    price = str(priceEntry.get())
+    qnt = str(qntEntry.get())
+    cat = str(categoryCombo.get())
+
+    if(selectedItemid!=itemId):
+        messagebox.showwarning("", "You can't change registed Item ID")
+        return
+
+    if (not(itemId and itemId.strip())) or (not(name and name.strip())) or (not(price and price.strip())) or (not(qnt and qnt.strip())) or (not(cat and cat.strip())):
+        messagebox.showinfo("Error", "Please fill up the blank entry")
+        return
+    else:
+        try:
+            sql=f"UPDATE stocks SET `name` = '{name}', `price` = '{price}', `qnt` = '{qnt}', `category` = '{cat}' WHERE `item_id` = '{selectedItemid}' "
+            cursor.execute(sql)
+            conn.commit()
+            conn.close()
+        except:
+            messagebox.showinfo("Error", "Stud ID already exist")
+            return
+
+    refreshTable()
+
+def delete():
+    try:
+        if(my_tree.selection()[0]):
+            decision = messagebox.askquestion("", "Delete the selected data?")
+            if decision != "yes":
+                return 
+            else:
+                selected_item = my_tree.selection()[0]
+                deleteData = str(my_tree.item(selected_item)['values'][0])
+                try:
+                    sql = f"DELETE FROM stocks WHERE `item_id` = '{str(deleteData)}'"
+                    cursor.execute(sql)
+                    conn.commit()
+                    conn.close()
+                    messagebox.showinfo("", "Data has been successfully deleted")
+                except:
+                    messagebox.showinfo("", "Sorry, an error occured")
+                    return
+                refreshTable()
+    except:
+        messagebox.showwarning("", "Please select a data row")
+
 def select():
     try:
         selected_item = my_tree.selection()[0]
@@ -145,8 +203,6 @@ def find():
     price = str(priceEntry.get())
     qnt = str(qntEntry.get())
     category = str(categoryCombo.get())
-    conn = connection()
-    cursor = conn.cursor()
     if(itemId and itemId.strip()):
         sql = f"SELECT `item_id`,`name`,`price`,`qnt`,`category` FROM stocks WHERE `item_id` LIKE '%{itemId}%' "
     elif(name and name.strip()):
@@ -184,9 +240,9 @@ manageFrame.grid(row=0,column=0, sticky="w", padx=[10,200],pady=20,ipadx=[6])
 
 saveBtn = Button(manageFrame, text="SAVE",width=10,borderwidth=3,bg=btnColor,fg='white',command=save)
 saveBtn.grid(row=0,column=0,padx=5,pady=5)
-updateBtn = Button(manageFrame, text="UPDATE",width=10,borderwidth=3,bg=btnColor,fg='white')
+updateBtn = Button(manageFrame, text="UPDATE",width=10,borderwidth=3,bg=btnColor,fg='white',command=update)
 updateBtn.grid(row=0,column=1,padx=5,pady=5)
-deleteBtn = Button(manageFrame, text="DELETE",width=10,borderwidth=3,bg=btnColor,fg='white')
+deleteBtn = Button(manageFrame, text="DELETE",width=10,borderwidth=3,bg=btnColor,fg='white',command=delete)
 deleteBtn.grid(row=0,column=2,padx=5,pady=5)
 selectBtn = Button(manageFrame, text="SELECT",width=10,borderwidth=3,bg=btnColor,fg='white',command=select)
 selectBtn.grid(row=0,column=3,padx=5,pady=5)
@@ -219,7 +275,7 @@ priceEntry = Entry(entriesFrame, width=50,textvariable = placeholderArray[2])
 priceEntry.grid(row=2,column=2,padx=5,pady=5)
 qntEntry = Entry(entriesFrame, width=50,textvariable = placeholderArray[3])
 qntEntry.grid(row=3,column=2,padx=5,pady=5)
-categoryCombo = ttk.Combobox(entriesFrame, values=['Networking Tools','Computer Parts','Repair Tools'], width=47,textvariable = placeholderArray[4])
+categoryCombo = ttk.Combobox(entriesFrame, values=['Networking Tools','Computer Parts','Repair Tools','Gadgets'], width=47,textvariable = placeholderArray[4])
 categoryCombo.grid(row=4,column=2,padx=5,pady=5)
 
 generateIdBtn = Button(entriesFrame, text="GENERATE ID",borderwidth=3,command=generateRand)
