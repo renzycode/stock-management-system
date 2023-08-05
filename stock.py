@@ -14,7 +14,8 @@ my_tree = ttk.Treeview(window, show='headings', height=20)
 window.geometry("720x640")
 style = ttk.Style()
 
-
+numeric = '1234567890'
+alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 def connection():
     conn = pymysql.connect(
@@ -71,9 +72,6 @@ def setph(word,num):
         if ph == num:
             placeholderArray[ph].set(word)
 
-numeric = '1234567890'
-alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
 def generateRand():
     itemId = ''
     for i in range(0,3):
@@ -83,6 +81,47 @@ def generateRand():
     itemId = itemId+'-'+str(alpha[randno])
     setph(itemId,0)
     print('generated: '+itemId)
+
+def save():
+    itemId = str(itemIdEntry.get())
+    name = str(nameEntry.get())
+    price = str(priceEntry.get())
+    qnt = str(qntEntry.get())
+    cat = str(categoryCombo.get())
+    valid = True
+    if(not(itemId[3]=='-')):
+        valid = False
+    for i in range(0,3):
+        if(not(itemId[i] in numeric)):
+            valid = False
+            break
+    if(not(itemId[4] in alpha)):
+        valid = False
+    if not(valid):
+        messagebox.showwarning("", "Invalid Item Id")
+        return
+    if (not(itemId and itemId.strip())) or (not(name and name.strip())) or (not(price and price.strip())) or (not(qnt and qnt.strip())) or (not(cat and cat.strip())):
+        messagebox.showwarning("", "Please fill up all entries")
+        return
+    else:
+        try:
+            conn = connection()
+            print(conn)
+            cursor = conn.cursor()
+            sql1=f"SELECT * FROM stocks WHERE `item_id` = '{itemId}' "
+            cursor.execute(sql1)
+            checkItemNo = cursor.fetchall()
+            if len(checkItemNo) > 0:
+                messagebox.showwarning("", "Item Id already used")
+            else:
+                sql2=f"INSERT INTO stocks (`item_id`, `name`, `price`, `qnt`, `category`) VALUES ('{itemId}','{name}','{price}','{qnt}','{cat}') "
+                cursor.execute(sql2)
+            conn.commit()
+            conn.close()
+        except:
+            messagebox.showerror("", "Error while saving")
+            return
+    refreshTable()
 
 def select():
     try:
@@ -100,56 +139,61 @@ def select():
     except:
         messagebox.showwarning("", "Please select a data row")
 
-def save():
+def find():
     itemId = str(itemIdEntry.get())
     name = str(nameEntry.get())
     price = str(priceEntry.get())
     qnt = str(qntEntry.get())
-    cat = str(categoryCombo.get())
-
-    if (not(itemId and itemId.strip())) or (not(name and name.strip())) or (not(price and price.strip())) or (not(qnt and qnt.strip())) or (not(cat and cat.strip())):
-        messagebox.showwarning("", "Please fill up all entries")
-        return
+    category = str(categoryCombo.get())
+    conn = connection()
+    cursor = conn.cursor()
+    if(itemId and itemId.strip()):
+        sql = f"SELECT `item_id`,`name`,`price`,`qnt`,`category` FROM stocks WHERE `item_id` LIKE '%{itemId}%' "
+    elif(name and name.strip()):
+        sql = f"SELECT `item_id`,`name`,`price`,`qnt`,`category` FROM stocks WHERE `name` LIKE '%{name}%' "
+    elif(price and price.strip()):
+        sql = f"SELECT `item_id`,`name`,`price`,`qnt`,`category` FROM stocks WHERE `price` LIKE '%{price}%' "
+    elif(qnt and qnt.strip()):
+        sql = f"SELECT `item_id`,`name`,`price`,`qnt`,`category` FROM stocks WHERE `qnt` LIKE '%{qnt}%' "
+    elif(category and category.strip()):
+        sql = f"SELECT `item_id`,`name`,`price`,`qnt`,`category` FROM stocks WHERE `category` LIKE '%{category}%' "
     else:
-        try:
-            conn = connection()
-            print(conn)
-            cursor = conn.cursor()
-            sql1=f"SELECT * FROM stocks WHERE `item_id` = '{itemId}' "
-            cursor.execute(sql1)
-            checkItemNo = cursor.fetchall()
-            if len(checkItemNo) > 0:
-                messagebox.showwarning("", "Item Id already used")
-            else:
-                sql2=f"INSERT INTO stocks (`item_id`, `name`, `price`, `qnt`, `category`) VALUES ('{itemId}','{name}','{price}','{qnt}','{cat}') "
-                cursor.execute(sql2)
+        messagebox.showwarning("", "Please fill up one on the entries")
+        return
+    cursor.execute(sql)
+    try:
+        result = cursor.fetchall()
+        for num in range(0,5):
+            setph(result[0][num],(num))
+        conn.commit()
+        conn.close()
+    except:
+        messagebox.showwarning("", "No data found")
 
-            conn.commit()
-            conn.close()
-        except:
-            messagebox.showerror("", "Error while saving")
-            return
-
-    refreshTable()
-
+def clear():
+    for num in range(0,5):
+        setph('',(num))
 
 frame = tkinter.Frame(window, bg="#02577A")
 frame.pack()
 
+btnColor = '#196E78'
+
 manageFrame= tkinter.LabelFrame(frame, text="Mange", borderwidth=5)
-manageFrame.grid(row=0,column=0, sticky="w", padx=[10,200],pady=20,ipadx=[52])
+manageFrame.grid(row=0,column=0, sticky="w", padx=[10,200],pady=20,ipadx=[6])
 
-saveBtn = Button(manageFrame, text="SAVE",width=10,borderwidth=3,bg="#196E78",fg='white',command=save)
+saveBtn = Button(manageFrame, text="SAVE",width=10,borderwidth=3,bg=btnColor,fg='white',command=save)
 saveBtn.grid(row=0,column=0,padx=5,pady=5)
-updateBtn = Button(manageFrame, text="UPDATE",width=10,borderwidth=3,bg="#196E78",fg='white')
+updateBtn = Button(manageFrame, text="UPDATE",width=10,borderwidth=3,bg=btnColor,fg='white')
 updateBtn.grid(row=0,column=1,padx=5,pady=5)
-deleteBtn = Button(manageFrame, text="DELETE",width=10,borderwidth=3,bg="#196E78",fg='white')
+deleteBtn = Button(manageFrame, text="DELETE",width=10,borderwidth=3,bg=btnColor,fg='white')
 deleteBtn.grid(row=0,column=2,padx=5,pady=5)
-selectBtn = Button(manageFrame, text="SELECT",width=10,borderwidth=3,bg="#196E78",fg='white',command=select)
+selectBtn = Button(manageFrame, text="SELECT",width=10,borderwidth=3,bg=btnColor,fg='white',command=select)
 selectBtn.grid(row=0,column=3,padx=5,pady=5)
-findBtn = Button(manageFrame, text="FIND",width=10,borderwidth=3,bg="#196E78",fg='white')
+findBtn = Button(manageFrame, text="FIND",width=10,borderwidth=3,bg=btnColor,fg='white',command=find)
 findBtn.grid(row=0,column=4,padx=5,pady=5)
-
+findBtn = Button(manageFrame, text="CLEAR",width=10,borderwidth=3,bg=btnColor,fg='white',command=clear)
+findBtn.grid(row=0,column=5,padx=5,pady=5)
 exportExcelBtn = Button(manageFrame, text="EXPORT EXCEL",width=15,borderwidth=3,bg="#196E78",fg='white',command=exportExcel)
 exportExcelBtn.grid(row=0,column=6,padx=5,pady=5)
 
