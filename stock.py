@@ -40,6 +40,7 @@ def refreshTable():
 def read():
     conn = connection()
     cursor = conn.cursor()
+    cursor.connection.ping()
     cursor.execute("SELECT `item_id`,`name`,`price`,`qnt`,`category`,`date` FROM stocks ORDER BY `id` DESC")
     results = cursor.fetchall()
     conn.commit()
@@ -47,6 +48,7 @@ def read():
     return results
 
 def exportExcel():
+    cursor.connection.ping()
     cursor.execute("SELECT `item_id`,`name`,`price`,`qnt`,`category`,`date` FROM stocks ORDER BY `id` DESC")
     dataraw = cursor.fetchall()
     date = str(datetime.now());
@@ -105,15 +107,14 @@ def save():
         return
     else:
         try:
-            conn = connection()
-            print(conn)
-            cursor = conn.cursor()
+            cursor.connection.ping()
             sql1=f"SELECT * FROM stocks WHERE `item_id` = '{itemId}' "
             cursor.execute(sql1)
             checkItemNo = cursor.fetchall()
             if len(checkItemNo) > 0:
                 messagebox.showwarning("", "Item Id already used")
             else:
+                cursor.connection.ping()
                 sql2=f"INSERT INTO stocks (`item_id`, `name`, `price`, `qnt`, `category`) VALUES ('{itemId}','{name}','{price}','{qnt}','{cat}') "
                 cursor.execute(sql2)
             conn.commit()
@@ -131,30 +132,29 @@ def update():
         selectedItemid = str(my_tree.item(selected_item)['values'][0])
     except:
         messagebox.showwarning("", "Please select a data row")
+        return
 
-    
-
+    print(selectedItemid) 
     itemId = str(itemIdEntry.get())
     name = str(nameEntry.get())
     price = str(priceEntry.get())
     qnt = str(qntEntry.get())
     cat = str(categoryCombo.get())
-
-    if(selectedItemid!=itemId):
-        messagebox.showwarning("", "You can't change registed Item ID")
-        return
-
     if (not(itemId and itemId.strip())) or (not(name and name.strip())) or (not(price and price.strip())) or (not(qnt and qnt.strip())) or (not(cat and cat.strip())):
         messagebox.showinfo("Error", "Please fill up the blank entry")
         return
+    if(selectedItemid!=itemId):
+        messagebox.showwarning("", "You can't change registed Item ID")
+        return
     else:
         try:
-            sql=f"UPDATE stocks SET `name` = '{name}', `price` = '{price}', `qnt` = '{qnt}', `category` = '{cat}' WHERE `item_id` = '{selectedItemid}' "
+            cursor.connection.ping()
+            sql=f"UPDATE stocks SET `name` = '{name}', `price` = '{price}', `qnt` = '{qnt}', `category` = '{cat}' WHERE `item_id` = '{itemId}' "
             cursor.execute(sql)
             conn.commit()
             conn.close()
-        except:
-            messagebox.showinfo("Error", "Stud ID already exist")
+        except Exception as error:
+            messagebox.showerror("", "Error occured reference: "+str(error))
             return
 
     refreshTable()
@@ -169,6 +169,7 @@ def delete():
                 selected_item = my_tree.selection()[0]
                 deleteData = str(my_tree.item(selected_item)['values'][0])
                 try:
+                    cursor.connection.ping()
                     sql = f"DELETE FROM stocks WHERE `item_id` = '{str(deleteData)}'"
                     cursor.execute(sql)
                     conn.commit()
@@ -203,6 +204,7 @@ def find():
     price = str(priceEntry.get())
     qnt = str(qntEntry.get())
     category = str(categoryCombo.get())
+    cursor.connection.ping()
     if(itemId and itemId.strip()):
         sql = f"SELECT `item_id`,`name`,`price`,`qnt`,`category` FROM stocks WHERE `item_id` LIKE '%{itemId}%' "
     elif(name and name.strip()):
