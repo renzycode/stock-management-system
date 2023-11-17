@@ -105,8 +105,9 @@ def save():
         conn.close()
         for num in range(0,5):
             setph('',(num))
-    except:
-        messagebox.showwarning("","Error while saving")
+    except Exception as e:
+        print(e)
+        messagebox.showwarning("","Error while saving ref: "+str(e))
         return
     refreshTable()
 
